@@ -14,11 +14,11 @@ REGION=us-west-2
 
 # Step 1: Create the initial service
 echo "Step 1: Creating LoadBalancer service without custom security groups..."
-oc apply -f 1-initial-service.yaml
+kubectl apply -f 1-initial-service.yaml
 
 echo "Waiting for LoadBalancer to be provisioned (this may take 2-3 minutes)..."
 for i in {1..60}; do
-  LB_DNS=$(oc get svc test-clb-service -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null || echo "")
+  LB_DNS=$(kubectl get svc test-clb-service -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null || echo "")
   if [ -n "$LB_DNS" ]; then
     echo "✓ LoadBalancer provisioned: $LB_DNS"
     break
@@ -72,12 +72,12 @@ aws ec2 authorize-security-group-ingress \
   --protocol tcp \
   --port 80 \
   --cidr 0.0.0.0/0 \
-  --region $REGION
+  --region $REGION > /dev/null
 
 # Step 4: Patch the service with BYO SG annotation
 echo ""
 echo "Step 4: Adding BYO security group annotation to the service..."
-oc annotate svc test-clb-service service.beta.kubernetes.io/aws-load-balancer-security-groups=$CUSTOM_SG
+kubectl annotate svc test-clb-service service.beta.kubernetes.io/aws-load-balancer-security-groups=$CUSTOM_SG
 
 echo "Waiting for reconciliation (60 seconds)..."
 sleep 60

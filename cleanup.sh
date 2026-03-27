@@ -24,8 +24,8 @@ fi
 
 # Step 1: Delete the service
 echo "Step 1: Deleting the service and load balancer..."
-if oc get svc test-clb-service >/dev/null 2>&1; then
-  oc delete -f 1-initial-service.yaml
+if kubectl get svc test-clb-service >/dev/null 2>&1; then
+  kubectl delete -f 1-initial-service.yaml
   echo "Service deleted. Waiting for load balancer to be removed..."
 
   # Wait for load balancer to be deleted
@@ -36,6 +36,9 @@ if oc get svc test-clb-service >/dev/null 2>&1; then
     else
       echo ""
       echo "✓ Load balancer deleted"
+      echo "Waiting 1 minute to let changes settle..."
+      # Give AWS a moment to fully clean up
+      sleep 60
       break
     fi
   done
@@ -44,8 +47,6 @@ else
   echo "Service not found, skipping..."
 fi
 
-# Give AWS a moment to fully clean up
-sleep 30
 
 # Step 2: Delete custom security group
 echo ""
